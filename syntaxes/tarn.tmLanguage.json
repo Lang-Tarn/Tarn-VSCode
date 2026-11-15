@@ -1,0 +1,391 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Tarn",
+  "scopeName": "source.tarn",
+  "fileTypes": ["tarn"],
+  "patterns": [
+    { "include": "#shebang" },
+    { "include": "#statement" }
+  ],
+  "repository": {
+    "shebang": {
+      "match": "\\A#!.*$",
+      "name": "comment.line.shebang.tarn"
+    },
+    "statement": {
+      "patterns": [
+        { "include": "#comment" },
+        { "include": "#import" },
+        { "include": "#function-definition" },
+        { "include": "#struct-definition" },
+        { "include": "#enum-definition" },
+        { "include": "#case-line" },
+        { "include": "#match-line" },
+        { "include": "#declaration" },
+        { "include": "#field-declaration" },
+        { "include": "#control" },
+        { "include": "#expression" }
+      ]
+    },
+    "comment": {
+      "match": "(#).*$",
+      "name": "comment.line.number-sign.tarn",
+      "captures": { "1": { "name": "punctuation.definition.comment.tarn" } }
+    },
+    "import": {
+      "patterns": [
+        {
+          "comment": "from shapes.circle import Circle, area as a  /  from .. import util",
+          "begin": "^\\s*(from)\\s+(?=[.A-Za-z_][A-Za-z0-9_.]*\\s+import\\b)",
+          "beginCaptures": { "1": { "name": "keyword.control.import.tarn" } },
+          "end": "$",
+          "patterns": [
+            { "include": "#comment" },
+            {
+              "begin": "\\b(import)\\b",
+              "beginCaptures": { "1": { "name": "keyword.control.import.tarn" } },
+              "end": "(?=$|#)",
+              "patterns": [
+                { "include": "#import-names" }
+              ]
+            },
+            { "match": "\\.", "name": "punctuation.separator.period.tarn" },
+            { "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b", "name": "entity.name.namespace.tarn" }
+          ]
+        },
+        {
+          "comment": "import shapes.circle as c",
+          "begin": "^\\s*(import)\\b",
+          "beginCaptures": { "1": { "name": "keyword.control.import.tarn" } },
+          "end": "(?=$|#)",
+          "patterns": [
+            { "match": "\\b(as)\\s+([A-Za-z_][A-Za-z0-9_]*)", "captures": { "1": { "name": "keyword.control.import.tarn" }, "2": { "name": "entity.name.namespace.tarn" } } },
+            { "match": "\\.", "name": "punctuation.separator.period.tarn" },
+            { "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b", "name": "entity.name.namespace.tarn" }
+          ]
+        }
+      ]
+    },
+    "import-names": {
+      "patterns": [
+        { "include": "#comment" },
+        { "match": "\\b(as)\\s+([A-Za-z_][A-Za-z0-9_]*)", "captures": { "1": { "name": "keyword.control.import.tarn" }, "2": { "name": "entity.name.namespace.tarn" } } },
+        { "match": "\\b_?[A-Z][A-Za-z0-9_]*\\b", "name": "entity.name.type.tarn" },
+        { "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b", "name": "entity.name.function.tarn" },
+        { "match": "\\*", "name": "keyword.operator.wildcard.tarn" },
+        { "match": ",", "name": "punctuation.separator.comma.tarn" },
+        { "match": "[()]", "name": "punctuation.parenthesis.tarn" }
+      ]
+    },
+    "function-definition": {
+      "comment": "fn name(...), generic fn name[T, U](...), and operator functions: fn +(...), fn <=>(...), fn [](...), fn []=(...)",
+      "begin": "\\b(fn)\\s+(?:([A-Za-z_][A-Za-z0-9_]*)(?:\\s*(\\[)([^\\]]*)(\\]))?|(<=>|==|\\[\\]=?|[-+*/%]))\\s*(\\()",
+      "beginCaptures": {
+        "1": { "name": "storage.type.function.tarn" },
+        "2": { "name": "entity.name.function.tarn" },
+        "3": { "name": "punctuation.definition.type-parameters.begin.tarn" },
+        "4": { "patterns": [ { "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b", "name": "entity.name.type.parameter.tarn" }, { "match": ",", "name": "punctuation.separator.comma.tarn" } ] },
+        "5": { "name": "punctuation.definition.type-parameters.end.tarn" },
+        "6": { "name": "entity.name.function.operator.tarn" },
+        "7": { "name": "punctuation.definition.parameters.begin.tarn" }
+      },
+      "end": "(\\))",
+      "endCaptures": { "1": { "name": "punctuation.definition.parameters.end.tarn" } },
+      "patterns": [
+        { "include": "#comment" },
+        { "match": "\\bself\\b", "name": "variable.language.self.tarn" },
+        {
+          "match": "\\b([A-Za-z_][A-Za-z0-9_]*)\\s*(:)",
+          "captures": {
+            "1": { "name": "variable.parameter.tarn" },
+            "2": { "name": "punctuation.separator.annotation.tarn" }
+          }
+        },
+        { "include": "#types" },
+        { "match": "\\?", "name": "keyword.operator.optional.tarn" },
+        { "match": "[\\[\\]]", "name": "punctuation.brackets.tarn" },
+        { "match": ",", "name": "punctuation.separator.parameters.tarn" }
+      ]
+    },
+    "struct-definition": {
+      "comment": "struct Name, or a generic struct Name[T, U]",
+      "match": "\\b(struct)\\s+([A-Za-z_][A-Za-z0-9_]*)(?:\\s*(\\[)([^\\]]*)(\\]))?",
+      "captures": {
+        "1": { "name": "storage.type.struct.tarn" },
+        "2": { "name": "entity.name.type.struct.tarn" },
+        "3": { "name": "punctuation.definition.type-parameters.begin.tarn" },
+        "4": { "patterns": [ { "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b", "name": "entity.name.type.parameter.tarn" }, { "match": ",", "name": "punctuation.separator.comma.tarn" } ] },
+        "5": { "name": "punctuation.definition.type-parameters.end.tarn" }
+      }
+    },
+    "enum-definition": {
+      "comment": "An enum and its indented body: variants (`Circle(radius: Float)`) and methods",
+      "begin": "^(\\s*)(enum)\\s+([A-Za-z_][A-Za-z0-9_]*)(?:\\s*(\\[)([^\\]]*)(\\]))?\\s*(:)",
+      "beginCaptures": {
+        "2": { "name": "storage.type.enum.tarn" },
+        "3": { "name": "entity.name.type.enum.tarn" },
+        "4": { "name": "punctuation.definition.type-parameters.begin.tarn" },
+        "5": { "patterns": [ { "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b", "name": "entity.name.type.parameter.tarn" }, { "match": ",", "name": "punctuation.separator.comma.tarn" } ] },
+        "6": { "name": "punctuation.definition.type-parameters.end.tarn" },
+        "7": { "name": "punctuation.separator.colon.tarn" }
+      },
+      "end": "^(?!\\1\\s+\\S|\\s*$|\\s*#)",
+      "patterns": [
+        { "include": "#comment" },
+        { "include": "#function-definition" },
+        {
+          "begin": "^\\s+([A-Z][A-Za-z0-9_]*)\\s*(\\()",
+          "beginCaptures": {
+            "1": { "name": "variable.other.enummember.tarn" },
+            "2": { "name": "punctuation.definition.parameters.begin.tarn" }
+          },
+          "end": "(\\))",
+          "endCaptures": { "1": { "name": "punctuation.definition.parameters.end.tarn" } },
+          "patterns": [
+            {
+              "match": "\\b([a-z_][A-Za-z0-9_]*)\\s*(:)",
+              "captures": {
+                "1": { "name": "variable.other.property.tarn" },
+                "2": { "name": "punctuation.separator.annotation.tarn" }
+              }
+            },
+            { "include": "#types" },
+            { "match": "\\?", "name": "keyword.operator.optional.tarn" },
+            { "match": "[\\[\\]]", "name": "punctuation.brackets.tarn" },
+            { "match": ",", "name": "punctuation.separator.parameters.tarn" }
+          ]
+        },
+        {
+          "match": "^\\s+([A-Z][A-Za-z0-9_]*)\\s*(?=$|#)",
+          "captures": { "1": { "name": "variable.other.enummember.tarn" } }
+        },
+        { "include": "#statement" }
+      ]
+    },
+    "match-line": {
+      "comment": "`match` is only a keyword at the start of a `match <value>:` line",
+      "match": "^\\s*(match)\\b(?=\\s+[^=\\s.].*:\\s*(?:#.*)?$)",
+      "captures": { "1": { "name": "keyword.control.flow.match.tarn" } }
+    },
+    "case-line": {
+      "comment": "`case <pattern> [if <guard>]:` up to the block's colon",
+      "begin": "^\\s*(case)\\b(?=\\s*[^=\\s])",
+      "beginCaptures": { "1": { "name": "keyword.control.flow.case.tarn" } },
+      "end": "(:)",
+      "endCaptures": { "1": { "name": "punctuation.separator.colon.tarn" } },
+      "patterns": [
+        { "include": "#comment" },
+        { "match": "\\b(as|if)\\b", "name": "keyword.control.flow.tarn" },
+        { "match": "\\b_\\b", "name": "variable.language.wildcard.tarn" },
+        { "match": "\\|", "name": "keyword.operator.pattern.or.tarn" },
+        {
+          "match": "\\b([A-Z][A-Za-z0-9_]*)\\s*(\\.)(?=\\s*[A-Z])",
+          "captures": {
+            "1": { "name": "entity.name.type.tarn" },
+            "2": { "name": "punctuation.accessor.tarn" }
+          }
+        },
+        { "match": "\\b[A-Z][A-Za-z0-9_]*\\b", "name": "variable.other.enummember.tarn" },
+        {
+          "match": "\\b([a-z_][A-Za-z0-9_]*)\\s*(=)(?!=)",
+          "captures": {
+            "1": { "name": "variable.other.property.tarn" },
+            "2": { "name": "keyword.operator.assignment.tarn" }
+          }
+        },
+        { "include": "#expression" }
+      ]
+    },
+    "declaration": {
+      "match": "\\b(val|var)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+      "captures": {
+        "1": { "name": "storage.type.variable.tarn" },
+        "2": { "name": "variable.other.declaration.tarn" }
+      }
+    },
+    "field-declaration": {
+      "match": "^\\s+([a-z_][A-Za-z0-9_]*)\\s*(:)(?=\\s*[A-Z])",
+      "captures": {
+        "1": { "name": "variable.other.property.tarn" },
+        "2": { "name": "punctuation.separator.annotation.tarn" }
+      }
+    },
+    "control": {
+      "match": "\\b(if|elif|else|while|for|in|break|continue|return|pass)\\b",
+      "name": "keyword.control.flow.tarn"
+    },
+    "expression": {
+      "patterns": [
+        { "include": "#comment" },
+        { "include": "#fstring" },
+        { "include": "#string" },
+        { "include": "#number" },
+        { "include": "#constants" },
+        { "include": "#logical" },
+        { "include": "#control" },
+        { "include": "#module-access" },
+        { "include": "#builtin-call" },
+        { "include": "#member" },
+        { "include": "#types" },
+        { "include": "#function-call" },
+        { "include": "#operators" },
+        { "include": "#punctuation" },
+        { "include": "#illegal-brace" }
+      ]
+    },
+    "constants": {
+      "patterns": [
+        { "match": "\\b(true|false)\\b", "name": "constant.language.boolean.tarn" },
+        { "match": "\\bnull\\b", "name": "constant.language.null.tarn" },
+        { "match": "\\bself\\b", "name": "variable.language.self.tarn" }
+      ]
+    },
+    "logical": {
+      "match": "\\b(and|or|not)\\b",
+      "name": "keyword.operator.logical.tarn"
+    },
+    "types": {
+      "patterns": [
+        {
+          "match": "\\b(Int|Float|Bool|String|List|Map|Unit)\\b(\\?(?![.:]\\s*[^\\s#]))?",
+          "captures": {
+            "1": { "name": "support.type.primitive.tarn" },
+            "2": { "name": "keyword.operator.optional.tarn" }
+          }
+        },
+        {
+          "match": "\\b([A-Z][A-Za-z0-9_]*)\\b(\\?(?![.:]\\s*[^\\s#]))?",
+          "captures": {
+            "1": { "name": "entity.name.type.tarn" },
+            "2": { "name": "keyword.operator.optional.tarn" }
+          }
+        }
+      ]
+    },
+    "module-access": {
+      "match": "\\b(time)(?=\\s*\\.)",
+      "name": "entity.name.namespace.tarn"
+    },
+    "builtin-call": {
+      "match": "\\b(print|input|args|panic|assert|sqrt|exit|hash)\\s*(?=\\()",
+      "captures": { "1": { "name": "support.function.builtin.tarn" } }
+    },
+    "function-call": {
+      "comment": "f(...), and a generic call with explicit type arguments: f[Int](...)",
+      "match": "\\b([a-z_][A-Za-z0-9_]*)\\s*(?=\\(|\\[\\s*[A-Z][^\\]]*\\]\\s*\\()",
+      "captures": { "1": { "name": "entity.name.function.call.tarn" } }
+    },
+    "member": {
+      "patterns": [
+        {
+          "comment": "`Shape.Circle`: capitalized members are enum variants",
+          "match": "(\\.)\\s*([A-Z][A-Za-z0-9_]*)\\b",
+          "captures": {
+            "1": { "name": "punctuation.accessor.tarn" },
+            "2": { "name": "variable.other.enummember.tarn" }
+          }
+        },
+        {
+          "match": "(?:(\\?\\.)|(\\.))\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*(?=\\()",
+          "captures": {
+            "1": { "name": "punctuation.accessor.optional.tarn" },
+            "2": { "name": "punctuation.accessor.tarn" },
+            "3": { "name": "entity.name.function.member.tarn" }
+          }
+        },
+        {
+          "match": "(?:(\\?\\.)|(\\.))(?!\\.)\\s*([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": { "name": "punctuation.accessor.optional.tarn" },
+            "2": { "name": "punctuation.accessor.tarn" },
+            "3": { "name": "variable.other.property.tarn" }
+          }
+        }
+      ]
+    },
+    "number": {
+      "patterns": [
+        { "match": "\\b0[xX][0-9a-fA-F_]+\\b", "name": "constant.numeric.hex.tarn" },
+        { "match": "\\b0[bB][01_]+\\b", "name": "constant.numeric.binary.tarn" },
+        { "match": "\\b\\d[\\d_]*\\.\\d[\\d_]*(?:[eE][+-]?\\d+)?\\b", "name": "constant.numeric.float.tarn" },
+        { "match": "\\b\\d[\\d_]*[eE][+-]?\\d+\\b", "name": "constant.numeric.float.tarn" },
+        { "match": "\\b\\d[\\d_]*\\b", "name": "constant.numeric.integer.tarn" }
+      ]
+    },
+    "escape": {
+      "patterns": [
+        { "match": "\\\\[ntr0\\\\\"'{}]", "name": "constant.character.escape.tarn" },
+        { "match": "\\\\.", "name": "invalid.illegal.unknown-escape.tarn" }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.tarn",
+      "begin": "\"",
+      "beginCaptures": { "0": { "name": "punctuation.definition.string.begin.tarn" } },
+      "end": "(\")|$",
+      "endCaptures": { "1": { "name": "punctuation.definition.string.end.tarn" } },
+      "patterns": [{ "include": "#escape" }]
+    },
+    "fstring": {
+      "name": "string.quoted.double.interpolated.tarn",
+      "begin": "(f)(\")",
+      "beginCaptures": {
+        "1": { "name": "storage.type.string.tarn" },
+        "2": { "name": "punctuation.definition.string.begin.tarn" }
+      },
+      "end": "(\")|$",
+      "endCaptures": { "1": { "name": "punctuation.definition.string.end.tarn" } },
+      "patterns": [
+        { "include": "#escape" },
+        { "match": "\\{\\{|\\}\\}", "name": "constant.character.escape.brace.tarn" },
+        {
+          "name": "meta.interpolation.tarn",
+          "contentName": "meta.embedded.line.tarn",
+          "begin": "\\{",
+          "beginCaptures": { "0": { "name": "punctuation.section.interpolation.begin.tarn" } },
+          "end": "\\}",
+          "endCaptures": { "0": { "name": "punctuation.section.interpolation.end.tarn" } },
+          "patterns": [{ "include": "#expression" }]
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        { "match": "->", "name": "keyword.operator.arrow.tarn" },
+        {
+          "comment": "`-> List[Int]?:` at the end of a line: a nullable type, then the block's colon",
+          "match": "(\\?)(:)(?=\\s*(?:#.*)?$)",
+          "captures": {
+            "1": { "name": "keyword.operator.optional.tarn" },
+            "2": { "name": "punctuation.separator.colon.tarn" }
+          }
+        },
+        { "match": "\\?:", "name": "keyword.operator.elvis.tarn" },
+        { "match": "!!", "name": "keyword.operator.non-null-assertion.tarn" },
+        { "match": "\\?", "name": "keyword.operator.optional.tarn" },
+        { "match": "\\.\\.=?", "name": "keyword.operator.range.tarn" },
+        { "match": "<=>|==|!=|<=|>=|<|>", "name": "keyword.operator.comparison.tarn" },
+        { "match": "[+\\-*/%]=", "name": "keyword.operator.assignment.compound.tarn" },
+        { "match": "=", "name": "keyword.operator.assignment.tarn" },
+        { "match": "[+\\-*/%]", "name": "keyword.operator.arithmetic.tarn" }
+      ]
+    },
+    "punctuation": {
+      "patterns": [
+        { "match": ",", "name": "punctuation.separator.comma.tarn" },
+        { "match": ":", "name": "punctuation.separator.colon.tarn" },
+        { "match": "[()\\[\\]]", "name": "punctuation.brackets.tarn" }
+      ]
+    },
+    "illegal-brace": {
+      "comment": "`{` ending a line after a value (`if x {`) is a block brace from another language; other braces are map literals",
+      "patterns": [
+        {
+          "match": "(?<=[A-Za-z0-9_)\\]])\\s*(\\{)(?=\\s*(#.*)?$)",
+          "captures": { "1": { "name": "invalid.illegal.brace.tarn" } }
+        },
+        { "match": "[{}]", "name": "punctuation.section.braces.tarn" }
+      ]
+    }
+  }
+}

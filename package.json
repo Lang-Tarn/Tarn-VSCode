@@ -1,0 +1,161 @@
+{
+  "name": "tarn",
+  "displayName": "Tarn",
+  "description": "Tarn language support: live type checking, lints, hover, go to definition, completion, inlay type hints, syntax highlighting, a run button, and the Tarn Light theme.",
+  "version": "0.10.0",
+  "publisher": "tarn-lang",
+  "license": "UNLICENSED",
+  "icon": "icons/icon.png",
+  "galleryBanner": {
+    "color": "#ffffff",
+    "theme": "light"
+  },
+  "engines": {
+    "vscode": "^1.91.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters",
+    "Snippets",
+    "Themes"
+  ],
+  "keywords": [
+    "tarn",
+    "language server",
+    "compiler"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "tarn",
+        "aliases": [
+          "Tarn",
+          "tarn"
+        ],
+        "extensions": [
+          ".tr"
+        ],
+        "firstLine": "^#!.*\\btarn\\b",
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./icons/tarn-file-light.svg",
+          "dark": "./icons/tarn-file-dark.svg"
+        }
+      }
+    ],
+    "themes": [
+      {
+        "label": "Tarn Light",
+        "uiTheme": "vs",
+        "path": "./themes/tarn-light-color-theme.json"
+      },
+      {
+        "label": "Tarn Dark",
+        "uiTheme": "vs-dark",
+        "path": "./themes/tarn-dark-color-theme.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "tarn",
+        "scopeName": "source.tarn",
+        "path": "./syntaxes/tarn.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "tarn",
+        "path": "./snippets/tarn.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "tarn.runFile",
+        "title": "Run Tarn File",
+        "category": "Tarn",
+        "icon": "$(play)"
+      },
+      {
+        "command": "tarn.restartServer",
+        "title": "Restart Language Server",
+        "category": "Tarn"
+      },
+      {
+        "command": "tarn.showOutput",
+        "title": "Show Language Server Output",
+        "category": "Tarn"
+      }
+    ],
+    "menus": {
+      "editor/title/run": [
+        {
+          "command": "tarn.runFile",
+          "when": "resourceLangId == tarn",
+          "group": "navigation"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "tarn.runFile",
+          "when": "resourceLangId == tarn",
+          "group": "z_tarn"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "tarn.runFile",
+          "when": "editorLangId == tarn"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Tarn",
+      "properties": {
+        "tarn.path": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Path to the `tarn` executable. Leave empty to look on your `PATH`, then in `~/.local/bin` and `~/.cargo/bin`."
+        },
+        "tarn.trace.server": {
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "Log the messages exchanged with the Tarn language server (for debugging the extension)."
+        }
+      }
+    },
+    "configurationDefaults": {
+      "[tarn]": {
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true,
+        "editor.detectIndentation": false,
+        "editor.inlayHints.enabled": "on"
+      }
+    }
+  },
+  "scripts": {
+    "build": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node --target=node18 --minify --sourcemap",
+    "watch": "npm run build -- --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "node test/grammar.test.mjs",
+    "package": "vsce package --no-dependencies --skip-license --allow-missing-repository",
+    "vscode:prepublish": "npm run typecheck && npm run build"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^11.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "@types/vscode": "~1.91.0",
+    "@vscode/vsce": "^4.1.1",
+    "esbuild": "^0.28.2",
+    "typescript": "^5.9.3",
+    "vscode-oniguruma": "^2.0.1",
+    "vscode-textmate": "^9.3.2"
+  }
+}
