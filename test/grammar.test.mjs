@@ -259,6 +259,28 @@ expectScope("Leaf", "variable.other.enummember");
     check("v", "variable.parameter", 0);
 }
 
+// recoverable errors and bytes: `Result`, `Ok`/`Err`, the postfix `?`, `Bytes`
+{
+    const res = tokenize(`fn total(a: String) -> Result[Int, String]:\n    val n = parse(a)?\n    val b: Bytes = Bytes([1]) + a.encode()\n    val r = xs[0]?.len() ?: 0\n    return Ok(n + b.len())`);
+    const scopesOf = (text, nth = 0) => res.filter((t) => t.text === text)[nth]?.scopes.join(" ") ?? "(missing)";
+    const check = (text, scope, nth = 0) => {
+        const got = scopesOf(text, nth);
+        if (!got.includes(scope)) {
+            console.error(`FAIL ${JSON.stringify(text)} #${nth}: expected ${scope}, got ${got}`);
+            failures++;
+        } else {
+            console.log(`ok   ${JSON.stringify(text)} #${nth} -> ${scope}`);
+        }
+    };
+    check("Result", "support.type.primitive");
+    check("?", "keyword.operator.try"); // `parse(a)?`
+    check("Bytes", "support.type.primitive", 0); // the annotation
+    check("Bytes", "support.function.builtin", 1); // `Bytes([1])`
+    check("?.", "punctuation.accessor.optional", 0); // still a safe call
+    check("?:", "keyword.operator.elvis");
+    check("Ok", "support.function.builtin");
+}
+
 // interfaces: declarations, bounds, and the interfaces a type says it fits
 {
     const src = `interface Shape:\n    fn area(self) -> Float\n\ninterface Solid(Shape, geo.Named):\n    fn volume(self) -> Float\n\nstruct Cube(Solid):\n    side: Float\n\nstruct Gallery[T: Shape + geo.Named, U](Shape):\n    items: List[T]\n\nenum Tree[T: Shape](Container):\n    Leaf\n\nfn total[T: Shape](xs: List[T]) -> Float:\n    return 0.0\n\nfn main():\n    val interface = 1`;

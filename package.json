@@ -2,7 +2,7 @@
   "name": "tarn",
   "displayName": "Tarn",
   "description": "Tarn language support: live type checking, lints, hover, go to definition, completion, inlay type hints, syntax highlighting, a run button, and the Tarn Light theme.",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "publisher": "tarn-lang",
   "license": "UNLICENSED",
   "icon": "icons/icon.png",

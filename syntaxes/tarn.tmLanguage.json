@@ -319,7 +319,7 @@
     "types": {
       "patterns": [
         {
-          "match": "\\b(Int|Float|Bool|String|List|Map|Unit)\\b(\\?(?![.:]\\s*[^\\s#]))?",
+          "match": "\\b(Int|Float|Bool|String|Bytes|List|Map|Unit|Result)\\b(\\?(?![.:]\\s*[^\\s#]))?",
           "captures": {
             "1": { "name": "support.type.primitive.tarn" },
             "2": { "name": "keyword.operator.optional.tarn" }
@@ -339,7 +339,7 @@
       "name": "entity.name.namespace.tarn"
     },
     "builtin-call": {
-      "match": "\\b(print|input|args|panic|assert|sqrt|exit|hash)\\s*(?=\\()",
+      "match": "\\b(print|input|args|panic|assert|sqrt|exit|hash|Ok|Err|Bytes)\\s*(?=\\()",
       "captures": { "1": { "name": "support.function.builtin.tarn" } }
     },
     "function-call": {
@@ -434,6 +434,11 @@
         },
         { "match": "\\?:", "name": "keyword.operator.elvis.tarn" },
         { "match": "!!", "name": "keyword.operator.non-null-assertion.tarn" },
+        {
+          "comment": "`parse(s)?`: pass the error on (after a value, not followed by `.` or `:`)",
+          "match": "(?<=[\\w)\\]])\\?(?![.:])",
+          "name": "keyword.operator.try.tarn"
+        },
         { "match": "\\?", "name": "keyword.operator.optional.tarn" },
         { "match": "\\.\\.=?", "name": "keyword.operator.range.tarn" },
         { "match": "<=>|==|!=|<=|>=|<|>", "name": "keyword.operator.comparison.tarn" },

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.13.0
+
+- Recoverable errors: `Result`, `Bytes` and `Unit` are highlighted as built-in types, `Ok(...)`, `Err(...)` and `Bytes(...)` as built-in calls, and the postfix `?` of `parse(s)?` as an operator of its own (the `?` of `Int?`, `?.` and `?:` keep theirs).
+- Completion offers `Result`, `Ok`, `Err` and `Unit` everywhere, `.` completion on a `Result` lists its methods (`is_ok`, `value_or`, `map_err`...), and on `Bytes` its methods (`decode`, `slice`, `find`, `hex`...), with hover docs. `s.encode()` and `s.char_count()` show up on strings.
+- The compiler's new errors and warnings appear live, e.g. "`?` passes an error on to the caller, but `main` doesn't return a `Result`", "`?` can't pass this error on: it's a `String`, but `count` fails with an `Int`", "this `Result` is ignored", "`Node` has a `fn drop`, so it can't be part of a reference cycle".
+- New snippets: `fnres` (a function returning a `Result`), `matchres` (handle `Ok` and `Err`), `drop` (`fn drop(self):`) and `connect` (a TCP connection with the `net` module).
+
 ## 0.12.0
 
 - Interfaces: `interface Shape:` and `interface Solid(Shape, Named):` are highlighted, and so are bounds in type parameters (`fn total[T: Shape + Named]`, `struct Gallery[T: Shape]`) and the interfaces a type says it fits (`struct Cube(Solid):`, `enum Tree(Container):`).
