@@ -19,6 +19,7 @@
         { "include": "#function-definition" },
         { "include": "#struct-definition" },
         { "include": "#enum-definition" },
+        { "include": "#interface-definition" },
         { "include": "#case-line" },
         { "include": "#match-line" },
         { "include": "#declaration" },
@@ -78,13 +79,13 @@
       ]
     },
     "function-definition": {
-      "comment": "fn name(...), generic fn name[T, U](...), and operator functions: fn +(...), fn <=>(...), fn [](...), fn []=(...)",
+      "comment": "fn name(...), generic fn name[T, U: Shape](...), and operator functions: fn +(...), fn <=>(...), fn [](...), fn []=(...)",
       "begin": "\\b(fn)\\s+(?:([A-Za-z_][A-Za-z0-9_]*)(?:\\s*(\\[)([^\\]]*)(\\]))?|(<=>|==|\\[\\]=?|[-+*/%]))\\s*(\\()",
       "beginCaptures": {
         "1": { "name": "storage.type.function.tarn" },
         "2": { "name": "entity.name.function.tarn" },
         "3": { "name": "punctuation.definition.type-parameters.begin.tarn" },
-        "4": { "patterns": [ { "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b", "name": "entity.name.type.parameter.tarn" }, { "match": ",", "name": "punctuation.separator.comma.tarn" } ] },
+        "4": { "patterns": [ { "include": "#type-parameters" } ] },
         "5": { "name": "punctuation.definition.type-parameters.end.tarn" },
         "6": { "name": "entity.name.function.operator.tarn" },
         "7": { "name": "punctuation.definition.parameters.begin.tarn" }
@@ -101,33 +102,103 @@
             "2": { "name": "punctuation.separator.annotation.tarn" }
           }
         },
+        { "include": "#lambda" },
         { "include": "#types" },
         { "match": "\\?", "name": "keyword.operator.optional.tarn" },
+        { "match": "->", "name": "keyword.operator.arrow.tarn" },
+        { "match": "[\\[\\]]", "name": "punctuation.brackets.tarn" },
+        { "match": ",", "name": "punctuation.separator.parameters.tarn" }
+      ]
+    },
+    "lambda": {
+      "comment": "A lambda's head, fn(x, y: Int), or a function type, fn(Int, String) -> Bool",
+      "begin": "\\b(fn)\\s*(\\()",
+      "beginCaptures": {
+        "1": { "name": "storage.type.function.tarn" },
+        "2": { "name": "punctuation.definition.parameters.begin.tarn" }
+      },
+      "end": "(\\))",
+      "endCaptures": { "1": { "name": "punctuation.definition.parameters.end.tarn" } },
+      "patterns": [
+        { "include": "#comment" },
+        { "include": "#lambda" },
+        {
+          "match": "\\b([a-z_][A-Za-z0-9_]*)\\s*(:)",
+          "captures": {
+            "1": { "name": "variable.parameter.tarn" },
+            "2": { "name": "punctuation.separator.annotation.tarn" }
+          }
+        },
+        { "include": "#types" },
+        { "match": "\\b[a-z_][A-Za-z0-9_]*\\b", "name": "variable.parameter.tarn" },
+        { "match": "\\?", "name": "keyword.operator.optional.tarn" },
+        { "match": "->", "name": "keyword.operator.arrow.tarn" },
         { "match": "[\\[\\]]", "name": "punctuation.brackets.tarn" },
         { "match": ",", "name": "punctuation.separator.parameters.tarn" }
       ]
     },
     "struct-definition": {
-      "comment": "struct Name, or a generic struct Name[T, U]",
-      "match": "\\b(struct)\\s+([A-Za-z_][A-Za-z0-9_]*)(?:\\s*(\\[)([^\\]]*)(\\]))?",
+      "comment": "struct Name, a generic struct Name[T, U: Shape], and the interfaces it says it fits: struct Name(Shape)",
+      "match": "\\b(struct)\\s+([A-Za-z_][A-Za-z0-9_]*)(?:\\s*(\\[)([^\\]]*)(\\]))?(?:\\s*(\\()([^)]*)(\\)))?",
       "captures": {
         "1": { "name": "storage.type.struct.tarn" },
         "2": { "name": "entity.name.type.struct.tarn" },
         "3": { "name": "punctuation.definition.type-parameters.begin.tarn" },
-        "4": { "patterns": [ { "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b", "name": "entity.name.type.parameter.tarn" }, { "match": ",", "name": "punctuation.separator.comma.tarn" } ] },
-        "5": { "name": "punctuation.definition.type-parameters.end.tarn" }
+        "4": { "patterns": [ { "include": "#type-parameters" } ] },
+        "5": { "name": "punctuation.definition.type-parameters.end.tarn" },
+        "6": { "name": "punctuation.definition.inheritance.begin.tarn" },
+        "7": { "patterns": [ { "include": "#interface-list" } ] },
+        "8": { "name": "punctuation.definition.inheritance.end.tarn" }
       }
+    },
+    "interface-definition": {
+      "comment": "interface Name, or one including others: interface Name(Shape, Named). Its methods are `fn` signatures.",
+      "match": "^(interface)\\s+([A-Za-z_][A-Za-z0-9_]*)(?:\\s*(\\()([^)]*)(\\)))?",
+      "captures": {
+        "1": { "name": "storage.type.interface.tarn" },
+        "2": { "name": "entity.name.type.interface.tarn" },
+        "3": { "name": "punctuation.definition.inheritance.begin.tarn" },
+        "4": { "patterns": [ { "include": "#interface-list" } ] },
+        "5": { "name": "punctuation.definition.inheritance.end.tarn" }
+      }
+    },
+    "type-parameters": {
+      "comment": "Inside `[T, U: Shape + Named]`: type parameters, and their bounds (interfaces) after `:`",
+      "patterns": [
+        {
+          "match": "(?<=[:+])\\s*((?:[A-Za-z_][A-Za-z0-9_]*\\.)?[A-Za-z_][A-Za-z0-9_]*)",
+          "captures": { "1": { "patterns": [ { "include": "#interface-list" } ] } }
+        },
+        {
+          "match": "\\b([A-Za-z_][A-Za-z0-9_]*)\\s*(:)",
+          "captures": { "1": { "name": "entity.name.type.parameter.tarn" }, "2": { "name": "punctuation.separator.annotation.tarn" } }
+        },
+        { "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b", "name": "entity.name.type.parameter.tarn" },
+        { "match": "\\+", "name": "keyword.operator.bound.tarn" },
+        { "match": ",", "name": "punctuation.separator.comma.tarn" }
+      ]
+    },
+    "interface-list": {
+      "comment": "Inside `(Shape, geo.Named)` after a type's name: interfaces",
+      "patterns": [
+        { "match": "\\b([a-z_][A-Za-z0-9_]*)(\\.)", "captures": { "1": { "name": "entity.name.namespace.tarn" }, "2": { "name": "punctuation.accessor.tarn" } } },
+        { "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b", "name": "entity.name.type.tarn" },
+        { "match": ",", "name": "punctuation.separator.comma.tarn" }
+      ]
     },
     "enum-definition": {
       "comment": "An enum and its indented body: variants (`Circle(radius: Float)`) and methods",
-      "begin": "^(\\s*)(enum)\\s+([A-Za-z_][A-Za-z0-9_]*)(?:\\s*(\\[)([^\\]]*)(\\]))?\\s*(:)",
+      "begin": "^(\\s*)(enum)\\s+([A-Za-z_][A-Za-z0-9_]*)(?:\\s*(\\[)([^\\]]*)(\\]))?(?:\\s*(\\()([^)]*)(\\)))?\\s*(:)",
       "beginCaptures": {
         "2": { "name": "storage.type.enum.tarn" },
         "3": { "name": "entity.name.type.enum.tarn" },
         "4": { "name": "punctuation.definition.type-parameters.begin.tarn" },
-        "5": { "patterns": [ { "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b", "name": "entity.name.type.parameter.tarn" }, { "match": ",", "name": "punctuation.separator.comma.tarn" } ] },
+        "5": { "patterns": [ { "include": "#type-parameters" } ] },
         "6": { "name": "punctuation.definition.type-parameters.end.tarn" },
-        "7": { "name": "punctuation.separator.colon.tarn" }
+        "7": { "name": "punctuation.definition.inheritance.begin.tarn" },
+        "8": { "patterns": [ { "include": "#interface-list" } ] },
+        "9": { "name": "punctuation.definition.inheritance.end.tarn" },
+        "10": { "name": "punctuation.separator.colon.tarn" }
       },
       "end": "^(?!\\1\\s+\\S|\\s*$|\\s*#)",
       "patterns": [
@@ -226,6 +297,7 @@
         { "include": "#module-access" },
         { "include": "#builtin-call" },
         { "include": "#member" },
+        { "include": "#lambda" },
         { "include": "#types" },
         { "include": "#function-call" },
         { "include": "#operators" },

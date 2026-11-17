@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.12.0
+
+- Interfaces: `interface Shape:` and `interface Solid(Shape, Named):` are highlighted, and so are bounds in type parameters (`fn total[T: Shape + Named]`, `struct Gallery[T: Shape]`) and the interfaces a type says it fits (`struct Cube(Solid):`, `enum Tree(Container):`).
+- Hover on an interface shows every method it asks for (also the ones it includes); on a call through an interface value (`s.area()`) or on a `T` with a bound, the method's signature and the interface it comes from. F12 jumps to the method in the interface.
+- `.` completion on an interface value offers its methods, and the outline and completion show interfaces with the interface icon.
+- The compiler's new errors appear live, e.g. "mismatched types: expected `Shape`, found `Point`" with why (`Point` has no method `area`, `Sq.area` returns `Int`, not `Float`) and the method to add, "`total` needs `T` to be a `Shape`, but `Int` isn't", and "`Sq` says it's a `Shape`, but ...".
+- New snippets: `interface`, and `fnbound` for a generic function with a bound (`fn total[T: Shape]`).
+
+## 0.11.0
+
+- Lambdas and function types: in `fn(x, y: Int) -> x + y` and `fn(Int, String) -> Bool`, `fn` and the parameters are highlighted, also when a function type sits inside a parameter list (`fn apply(f: fn(Int) -> Int, x: Int)`).
+- Hover on a lambda shows its type (`fn(Int) -> Int`), its parameters show the types they were given (`x: Int`, also as inlay hints when the types aren't written), and F12 on a captured name jumps to it outside the lambda.
+- `.` completion and hover on a list include `map`, `filter`, `any`, `all`, `find`, `count`, `fold`, `sort_by`, `min_by` and `max_by`, with their real types (`map(transform: fn(Int) -> U) -> List[U]`).
+- The compiler's new errors appear live, e.g. "a lambda can't capture `total`, a `var`", "cannot infer the type of parameter `x`", "`map` calls its function with 1 value, but this lambda takes 2" and "a lambda's block must start on a new line".
+- New snippets: `lambda` (`fn(x) -> ...`) and `fnval` (a lambda with a block body, in a variable).
+
 ## 0.10.0
 
 - **Tarn Dark**, the night-time sibling of Tarn Light: a near-black editor, hairline borders, light text and the same few muted syntax colors, softened for the dark. The Tarn website uses both themes for its code.

@@ -235,6 +235,69 @@ expectScope("Leaf", "variable.other.enummember");
 
 // The Tarn Light and Tarn Dark themes: valid, with the same keys, and every
 // main kind of token gets a color.
+// lambdas and function types
+{
+    const lam = tokenize(`fn apply(f: fn(Int) -> Int, x: Int) -> Int:\n    val g = fn(y, z: String) -> y * 2\n    return xs.map(fn(v) -> v + x)`);
+    const scopesOf = (text, nth = 0) => lam.filter((t) => t.text === text)[nth]?.scopes.join(" ") ?? "(missing)";
+    const check = (text, scope, nth = 0) => {
+        const got = scopesOf(text, nth);
+        if (!got.includes(scope)) {
+            console.error(`FAIL ${JSON.stringify(text)} #${nth}: expected ${scope}, got ${got}`);
+            failures++;
+        } else {
+            console.log(`ok   ${JSON.stringify(text)} #${nth} -> ${scope}`);
+        }
+    };
+    check("apply", "entity.name.function");
+    check("fn", "storage.type.function", 1); // the parameter's function type
+    check("Int", "support.type.primitive", 0);
+    check("x", "variable.parameter", 0); // still a parameter after the nested type's `)`
+    check("fn", "storage.type.function", 2); // a lambda
+    check("y", "variable.parameter", 0);
+    check("z", "variable.parameter", 0);
+    check("String", "support.type.primitive", 0);
+    check("v", "variable.parameter", 0);
+}
+
+// interfaces: declarations, bounds, and the interfaces a type says it fits
+{
+    const src = `interface Shape:\n    fn area(self) -> Float\n\ninterface Solid(Shape, geo.Named):\n    fn volume(self) -> Float\n\nstruct Cube(Solid):\n    side: Float\n\nstruct Gallery[T: Shape + geo.Named, U](Shape):\n    items: List[T]\n\nenum Tree[T: Shape](Container):\n    Leaf\n\nfn total[T: Shape](xs: List[T]) -> Float:\n    return 0.0\n\nfn main():\n    val interface = 1`;
+    const toks = tokenize(src);
+    const scopesOf = (text, nth = 0) => toks.filter((t) => t.text.trim() === text)[nth]?.scopes.join(" ") ?? "(missing)";
+    const check = (text, scope, nth = 0) => {
+        const got = scopesOf(text, nth);
+        if (!got.includes(scope)) {
+            console.error(`FAIL ${JSON.stringify(text)} #${nth}: expected ${scope}, got ${got}`);
+            failures++;
+        } else {
+            console.log(`ok   ${JSON.stringify(text)} #${nth} -> ${scope}`);
+        }
+    };
+    check("interface", "storage.type.interface", 0);
+    check("Shape", "entity.name.type.interface", 0);
+    check("area", "entity.name.function", 0);
+    check("Solid", "entity.name.type.interface", 0);
+    check("Shape", "entity.name.type.tarn", 1); // included interface
+    check("geo", "entity.name.namespace", 0);
+    check("Named", "entity.name.type.tarn", 0);
+    check("Cube", "entity.name.type.struct", 0);
+    check("Solid", "entity.name.type.tarn", 1); // `struct Cube(Solid)`
+    check("Gallery", "entity.name.type.struct", 0);
+    check("T", "entity.name.type.parameter", 0);
+    check("Shape", "entity.name.type.tarn", 2); // a bound
+    check("+", "keyword.operator.bound", 0);
+    check("Named", "entity.name.type.tarn", 1);
+    check("U", "entity.name.type.parameter", 0);
+    check("Shape", "entity.name.type.tarn", 3); // `struct Gallery[...](Shape)`
+    check("Tree", "entity.name.type.enum", 0);
+    check("Container", "entity.name.type.tarn", 0);
+    check("Leaf", "variable.other.enummember", 0);
+    check("T", "entity.name.type.parameter", 3); // `fn total[T: Shape]`
+    check("total", "entity.name.function", 0);
+    check("interface", "storage.type.interface", 1);
+    check("interface", "variable.other.declaration", 2); // just a name elsewhere
+}
+
 const themes = ["light", "dark"].map((v) => JSON.parse(fs.readFileSync(path.join(root, `themes/tarn-${v}-color-theme.json`), "utf8")));
 for (const theme of themes) {
     const colored = new Set(theme.tokenColors.flatMap((r) => [].concat(r.scope)));

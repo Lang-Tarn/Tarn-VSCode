@@ -10,7 +10,7 @@ Everything it knows comes from `tarn lsp`, the language server built into the co
 
 **Hover and inlay hints.** Hover shows the type of anything, including inferred types, smart casts (`val user: User`, smart-cast from `User?`), the values of constants (`val pi: Float = 3.141592653589793`) and `#` doc comments. `val total = price * qty` is shown as `val total: Float = price * qty`.
 
-**Completion.** After `.` you get the fields and methods of that value's type, with real types even for generics (`get(key: String) -> Int?` on a `Map[String, Int]`). After `math.` or `geometry.`, a module's functions, types and constants. After `import` and `from`, the `.tr` files and folders next to yours. Completing after `.` on a value that might be null turns it into `?.`.
+**Completion.** After `.` you get the fields and methods of that value's type (an interface's methods on an interface value), with real types even for generics (`get(key: String) -> Int?` on a `Map[String, Int]`). After `math.` or `geometry.`, a module's functions, types and constants. After `import` and `from`, the `.tr` files and folders next to yours. Completing after `.` on a value that might be null turns it into `?.`.
 
 **Navigation.** Go to definition (F12) works on variables, functions, types, fields, methods, enum variants and operators (the `+` in `a + b` jumps to its `fn +`), also into your other files. Structs, enums and functions appear in the Outline view and in breadcrumbs.
 
