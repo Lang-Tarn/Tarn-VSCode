@@ -22,6 +22,7 @@
         { "include": "#interface-definition" },
         { "include": "#case-line" },
         { "include": "#match-line" },
+        { "include": "#match-value" },
         { "include": "#declaration" },
         { "include": "#field-declaration" },
         { "include": "#control" },
@@ -152,14 +153,17 @@
       }
     },
     "interface-definition": {
-      "comment": "interface Name, or one including others: interface Name(Shape, Named). Its methods are `fn` signatures.",
-      "match": "^(interface)\\s+([A-Za-z_][A-Za-z0-9_]*)(?:\\s*(\\()([^)]*)(\\)))?",
+      "comment": "interface Name, a generic one: interface Source[T], or one including others: interface Name(Shape, Named). Its methods are `fn` signatures, or default methods with bodies.",
+      "match": "^(interface)\\s+([A-Za-z_][A-Za-z0-9_]*)(?:\\s*(\\[)([^\\]]*)(\\]))?(?:\\s*(\\()([^)]*)(\\)))?",
       "captures": {
         "1": { "name": "storage.type.interface.tarn" },
         "2": { "name": "entity.name.type.interface.tarn" },
-        "3": { "name": "punctuation.definition.inheritance.begin.tarn" },
-        "4": { "patterns": [ { "include": "#interface-list" } ] },
-        "5": { "name": "punctuation.definition.inheritance.end.tarn" }
+        "3": { "name": "punctuation.definition.type-parameters.begin.tarn" },
+        "4": { "patterns": [ { "include": "#type-parameters" } ] },
+        "5": { "name": "punctuation.definition.type-parameters.end.tarn" },
+        "6": { "name": "punctuation.definition.inheritance.begin.tarn" },
+        "7": { "patterns": [ { "include": "#interface-list" } ] },
+        "8": { "name": "punctuation.definition.inheritance.end.tarn" }
       }
     },
     "type-parameters": {
@@ -238,6 +242,19 @@
       "match": "^\\s*(match)\\b(?=\\s+[^=\\s.].*:\\s*(?:#.*)?$)",
       "captures": { "1": { "name": "keyword.control.flow.match.tarn" } }
     },
+    "match-value": {
+      "comment": "`match` used as a value ends a line after `=`, `+=`... or `return`: `val x = match code:`",
+      "patterns": [
+        {
+          "match": "(?<![=!<>])([+\\-*/%]?=)\\s*(match)\\b(?=\\s+[^=\\s.].*:\\s*(?:#.*)?$)",
+          "captures": { "1": { "name": "keyword.operator.assignment.tarn" }, "2": { "name": "keyword.control.flow.match.tarn" } }
+        },
+        {
+          "match": "\\b(return)\\s+(match)\\b(?=\\s+[^=\\s.].*:\\s*(?:#.*)?$)",
+          "captures": { "1": { "name": "keyword.control.flow.tarn" }, "2": { "name": "keyword.control.flow.match.tarn" } }
+        }
+      ]
+    },
     "case-line": {
       "comment": "`case <pattern> [if <guard>]:` up to the block's colon",
       "begin": "^\\s*(case)\\b(?=\\s*[^=\\s])",
@@ -275,7 +292,7 @@
       }
     },
     "field-declaration": {
-      "match": "^\\s+([a-z_][A-Za-z0-9_]*)\\s*(:)(?=\\s*[A-Z])",
+      "match": "^\\s+([a-z_][A-Za-z0-9_]*)\\s*(:)(?=\\s*[A-Z(])",
       "captures": {
         "1": { "name": "variable.other.property.tarn" },
         "2": { "name": "punctuation.separator.annotation.tarn" }
@@ -290,13 +307,13 @@
         { "include": "#comment" },
         { "include": "#fstring" },
         { "include": "#string" },
+        { "include": "#member" },
         { "include": "#number" },
         { "include": "#constants" },
         { "include": "#logical" },
         { "include": "#control" },
         { "include": "#module-access" },
         { "include": "#builtin-call" },
-        { "include": "#member" },
         { "include": "#lambda" },
         { "include": "#types" },
         { "include": "#function-call" },
@@ -349,6 +366,14 @@
     },
     "member": {
       "patterns": [
+        {
+          "comment": "`t.0`: an element of a tuple",
+          "match": "(?<=[A-Za-z0-9_)\\]])(\\?\\.|\\.)(\\d+)\\b",
+          "captures": {
+            "1": { "name": "punctuation.accessor.tarn" },
+            "2": { "name": "variable.other.property.tarn" }
+          }
+        },
         {
           "comment": "`Shape.Circle`: capitalized members are enum variants",
           "match": "(\\.)\\s*([A-Z][A-Za-z0-9_]*)\\b",

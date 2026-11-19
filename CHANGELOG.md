@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.14.0
+
+- The type system grows: `interface Source[T]:` highlights its type parameters, `match` is a keyword where it's used as a value (`val label = match code:`, `return match x:`, `total += match n:`), `t.0` reads as a tuple element (also `t.1.2`), and fields with tuple types or default values (`pair: (Int, String)`, `port: Int = 8080`) are fields.
+- `.` completion on a type lists its static methods (`App.` offers `new`), and on a value the default methods it gets from the interfaces it says it fits; static methods don't show up on values. Hover shows static methods, default methods ("default method of interface `Shape`"), tuple elements (`(Int, String).0: Int`) and a field's default value.
+- The compiler's new errors appear live, e.g. "`new` is a static method (it has no `self`): call it on the type", "the cases of this `match` give different types", "this case gives no value", "`(Int, String)` has no element `2`", "`name` was checked for `null`, but a lambda assigns `name`", "this case can never match: `Dog` isn't a `Shape`" and "a `Shape` can hold a value of any type that fits it".
+- New snippets: `fnstatic` (a static method), `matchval` (a `match` giving a value), `iterator` (a type `for` loops over, with the `Iterator` methods) and `fndefault` (a default method).
+
 ## 0.13.0
 
 - Recoverable errors: `Result`, `Bytes` and `Unit` are highlighted as built-in types, `Ok(...)`, `Err(...)` and `Bytes(...)` as built-in calls, and the postfix `?` of `parse(s)?` as an operator of its own (the `?` of `Int?`, `?.` and `?:` keep theirs).

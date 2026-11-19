@@ -320,6 +320,36 @@ expectScope("Leaf", "variable.other.enummember");
     check("interface", "variable.other.declaration", 2); // just a name elsewhere
 }
 
+{
+    // Phase 2: generic interfaces with default methods, `match` as a value, tuples, field defaults.
+    const src = `interface Source[T](Named):\n    fn next(self) -> T?\n\n    fn take(self, n: Int) -> List[T]:\n        return []\n\nstruct Config:\n    port: Int = 8080\n    pair: (Int, String)\n\nfn main():\n    val label = match code:\n        case 200: "ok"\n    total += match n:\n        case _: 1\n    val t = (1, "a")\n    print(t.0)\n    print(t.1.2)\n    val match = 3`;
+    const toks = tokenize(src);
+    const scopesOf = (text, nth = 0) => toks.filter((t) => t.text.trim() === text)[nth]?.scopes.join(" ") ?? "(missing)";
+    const check = (text, scope, nth = 0) => {
+        const got = scopesOf(text, nth);
+        if (!got.includes(scope)) {
+            console.error(`FAIL ${JSON.stringify(text)} #${nth}: expected ${scope}, got ${got}`);
+            failures++;
+        } else {
+            console.log(`ok   ${JSON.stringify(text)} #${nth} -> ${scope}`);
+        }
+    };
+    check("Source", "entity.name.type.interface", 0);
+    check("T", "entity.name.type.parameter", 0);
+    check("Named", "entity.name.type.tarn", 0);
+    check("take", "entity.name.function", 0);
+    check("port", "variable.other.property", 0);
+    check("8080", "constant.numeric.integer", 0);
+    check("pair", "variable.other.property", 0);
+    check("match", "keyword.control.flow.match", 0); // `val label = match code:`
+    check("case", "keyword.control.flow.case", 0);
+    check("match", "keyword.control.flow.match", 1); // `total += match n:`
+    check("0", "variable.other.property", 0); // `t.0`
+    check("1", "variable.other.property", 2); // `t.1.2`
+    check("2", "variable.other.property", 0);
+    check("match", "variable.other.declaration", 2); // just a name
+}
+
 const themes = ["light", "dark"].map((v) => JSON.parse(fs.readFileSync(path.join(root, `themes/tarn-${v}-color-theme.json`), "utf8")));
 for (const theme of themes) {
     const colored = new Set(theme.tokenColors.flatMap((r) => [].concat(r.scope)));

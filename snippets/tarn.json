@@ -341,5 +341,41 @@
             "\t${0:return $2}"
         ],
         "description": "A lambda with a block body, in a variable"
+    },
+    "Static method": {
+        "prefix": "fnstatic",
+        "body": [
+            "fn ${1:new}(${2:value}: ${3:Int}) -> ${4:Point}:",
+            "\t${0:return $4($2)}"
+        ],
+        "description": "A static method (no `self`), called on the type: `Type.new(...)`"
+    },
+    "match as a value": {
+        "prefix": "matchval",
+        "body": [
+            "val ${1:result} = match ${2:value}:",
+            "\tcase ${3:pattern}: ${4:value}",
+            "\tcase _: ${0:other}"
+        ],
+        "description": "A `match` that gives a value"
+    },
+    "Iterator": {
+        "prefix": "iterator",
+        "body": [
+            "struct ${1:Name}(Iterator[${2:Int}]):",
+            "\tvar ${3:at}: Int",
+            "",
+            "\tfn next(self) -> $2?:",
+            "\t\t${0:return null}"
+        ],
+        "description": "A type `for` can loop over, with the `Iterator` methods (`map`, `filter`, `to_list`...)"
+    },
+    "Default method": {
+        "prefix": "fndefault",
+        "body": [
+            "fn ${1:describe}(self) -> ${2:String}:",
+            "\t${0:return \"\"}"
+        ],
+        "description": "A default method in an interface: every type that fits gets it, unless it has its own"
     }
 }
