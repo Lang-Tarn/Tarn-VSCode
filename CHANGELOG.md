@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.16.0
+
+- Compile-time code: `comptime` is highlighted before `val`, `if`, `elif`, `for`, `match` and `fn`; `attribute get(path: String)` declarations and attributes written with `@` (`@get("/users/{id}")`, `@routes.post(...)`, and before a parameter: `@query page: Int`) get their own colors; `fields`, `params`, `attribute`, `type_name` and `compile_error` are built-in calls, and `Field`, `Parameter` and `Function` built-in types. Type patterns in a `comptime match` (`case U?:`, `case List[_]:`) highlight like other cases.
+- Typing `@` offers the attributes the file can use, with their fields. `.` after a `Field` or `Parameter` offers `name`, `type_name`... and `get`, `attribute` and `has`. Hover on an attribute shows its declaration and doc comment, on a `comptime val` its value (`comptime val n: Int = 5`), and on `fields`, `params`, `attribute`, `type_name` and `compile_error` what they do. A function's doc comment is found above its attributes.
+- The compiler's new errors appear live, e.g. "`n` isn't known while compiling", "panic while compiling: ...", "cannot find attribute `gte`" (with "did you mean `@get`?"), "`@get` is written twice here", "`get` needs to know which field this is while compiling", "no case of this `comptime match` fits `Bool`", and a library's own `compile_error` messages, shown at your attribute or at the line that uses the library.
+- New snippets: `comptimefor` (loop over a struct's fields), `fnfields` (a generic function using them), `comptimematch` (pick code by type), `attribute` (declare one) and `fnfunction` (take a function and read its attributes).
+
+## 0.15.0
+
+- Tasks: `spawn(...)` is highlighted as a built-in call, and `Task`, `Channel`, `Mutex`, `Atomic` and `Panic` as built-in types. A one-line lambda that assigns (`fn(m) -> m["home"] = 1`) highlights its `=` as an assignment.
+- Hover on `spawn` shows its signature (it takes `fn() -> T` and gives a `Task` of `T`) and what it does; completion offers `spawn`, and `.` completion lists the methods of `Task` (`join`, `is_done`), `Channel` (`send`, `receive`, `close`... and the iterator methods), `Mutex` (`lock`, `update`, `get`, `set`) and `Atomic` (`add`, `swap`, `compare_and_set`...), and `Channel.` offers `new` and `buffered`. (`.` after a prelude type, such as `Result.`, completes now too.)
+- The compiler's new errors appear live, e.g. "a task can't share `count`, a `var`, with the code around it", "a function run while a `Mutex` is held can't share `last`, a `var`..." and "`spawn` takes a function without parameters". `fn drop` on a generic struct is no longer an error.
+- New snippets: `spawn` (start a task and join it), `spawnall` (a task per element), `channel` (a worker reading a channel) and `mutex` (a shared value).
+
 ## 0.14.0
 
 - The type system grows: `interface Source[T]:` highlights its type parameters, `match` is a keyword where it's used as a value (`val label = match code:`, `return match x:`, `total += match n:`), `t.0` reads as a tuple element (also `t.1.2`), and fields with tuple types or default values (`pair: (Int, String)`, `port: Int = 8080`) are fields.

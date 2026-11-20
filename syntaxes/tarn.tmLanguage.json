@@ -16,6 +16,9 @@
       "patterns": [
         { "include": "#comment" },
         { "include": "#import" },
+        { "include": "#comptime" },
+        { "include": "#attribute-definition" },
+        { "include": "#attribute-use" },
         { "include": "#function-definition" },
         { "include": "#struct-definition" },
         { "include": "#enum-definition" },
@@ -95,6 +98,7 @@
       "endCaptures": { "1": { "name": "punctuation.definition.parameters.end.tarn" } },
       "patterns": [
         { "include": "#comment" },
+        { "include": "#attribute-use" },
         { "match": "\\bself\\b", "name": "variable.language.self.tarn" },
         {
           "match": "\\b([A-Za-z_][A-Za-z0-9_]*)\\s*(:)",
@@ -150,6 +154,44 @@
         "6": { "name": "punctuation.definition.inheritance.begin.tarn" },
         "7": { "patterns": [ { "include": "#interface-list" } ] },
         "8": { "name": "punctuation.definition.inheritance.end.tarn" }
+      }
+    },
+    "comptime": {
+      "comment": "`comptime` before `val`, `if`, `elif`, `for`, `match` or `fn`: code worked out while compiling",
+      "patterns": [
+        {
+          "match": "^\\s*(comptime)\\s+(match)\\b",
+          "captures": { "1": { "name": "keyword.other.comptime.tarn" }, "2": { "name": "keyword.control.flow.match.tarn" } }
+        },
+        { "match": "\\b(comptime)\\b(?=\\s+(?:val|if|elif|for|fn)\\b)", "name": "keyword.other.comptime.tarn" }
+      ]
+    },
+    "attribute-definition": {
+      "comment": "attribute get(path: String = \"/\"), or attribute skip",
+      "begin": "^(attribute)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+      "beginCaptures": {
+        "1": { "name": "storage.type.attribute.tarn" },
+        "2": { "name": "entity.name.function.decorator.tarn" }
+      },
+      "end": "$",
+      "patterns": [
+        { "include": "#comment" },
+        {
+          "match": "\\b([a-z_][A-Za-z0-9_]*)\\s*(:)",
+          "captures": {
+            "1": { "name": "variable.parameter.tarn" },
+            "2": { "name": "punctuation.separator.annotation.tarn" }
+          }
+        },
+        { "include": "#expression" }
+      ]
+    },
+    "attribute-use": {
+      "comment": "@get(\"/users\"), @skip, @routes.get(...): an attribute on the declaration below (or the parameter after it)",
+      "match": "(@)([A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)?)",
+      "captures": {
+        "1": { "name": "punctuation.definition.decorator.tarn" },
+        "2": { "name": "entity.name.function.decorator.tarn" }
       }
     },
     "interface-definition": {
@@ -266,6 +308,7 @@
         { "match": "\\b(as|if)\\b", "name": "keyword.control.flow.tarn" },
         { "match": "\\b_\\b", "name": "variable.language.wildcard.tarn" },
         { "match": "\\|", "name": "keyword.operator.pattern.or.tarn" },
+        { "match": "\\?(?=\\s*:)", "name": "keyword.operator.optional.tarn" },
         {
           "match": "\\b([A-Z][A-Za-z0-9_]*)\\s*(\\.)(?=\\s*[A-Z])",
           "captures": {
@@ -336,7 +379,7 @@
     "types": {
       "patterns": [
         {
-          "match": "\\b(Int|Float|Bool|String|Bytes|List|Map|Unit|Result)\\b(\\?(?![.:]\\s*[^\\s#]))?",
+          "match": "\\b(Int|Float|Bool|String|Bytes|List|Map|Unit|Result|Task|Channel|Mutex|Atomic|Panic|Field|Parameter|Function)\\b(\\?(?![.:]\\s*[^\\s#]))?",
           "captures": {
             "1": { "name": "support.type.primitive.tarn" },
             "2": { "name": "keyword.operator.optional.tarn" }
@@ -356,7 +399,7 @@
       "name": "entity.name.namespace.tarn"
     },
     "builtin-call": {
-      "match": "\\b(print|input|args|panic|assert|sqrt|exit|hash|Ok|Err|Bytes)\\s*(?=\\()",
+      "match": "\\b(print|input|args|panic|assert|sqrt|exit|hash|spawn|fields|params|attribute|type_name|compile_error|Ok|Err|Bytes)\\s*(?=\\()",
       "captures": { "1": { "name": "support.function.builtin.tarn" } }
     },
     "function-call": {

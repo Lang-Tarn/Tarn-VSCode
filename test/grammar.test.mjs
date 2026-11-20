@@ -350,6 +350,65 @@ expectScope("Leaf", "variable.other.enummember");
     check("match", "variable.other.declaration", 2); // just a name
 }
 
+// tasks: `spawn`, the task types, and one-line lambdas that assign
+{
+    const toks = tokenize(`fn main():\n    val jobs: Channel[Int] = Channel.buffered(8)\n    val hits: Mutex[Map[String, Int]] = Mutex({})\n    val t: Task[Int] = spawn(fn() -> work(jobs))\n    hits.lock(fn(m) -> m["home"] = 1)\n    val n = Atomic(0)\n    val spawn = 1`);
+    const scopesOf = (text, nth = 0) => toks.filter((t) => t.text.trim() === text)[nth]?.scopes.join(" ") ?? "(missing)";
+    const check = (text, scope, nth = 0) => {
+        const got = scopesOf(text, nth);
+        if (!got.includes(scope)) {
+            console.error(`FAIL ${JSON.stringify(text)} #${nth}: expected ${scope}, got ${got}`);
+            failures++;
+        } else {
+            console.log(`ok   ${JSON.stringify(text)} #${nth} -> ${scope}`);
+        }
+    };
+    check("Channel", "support.type.primitive", 0); // the annotation
+    check("Mutex", "support.type.primitive", 0);
+    check("Task", "support.type.primitive", 0);
+    check("Atomic", "support.type.primitive", 0);
+    check("spawn", "support.function.builtin", 0); // `spawn(...)`
+    check("fn", "storage.type.function", 2); // the lambda given to `spawn`
+    check("=", "keyword.operator.assignment", 3); // `fn(m) -> m["home"] = 1`
+    check("spawn", "variable.other.declaration", 1); // just a name
+}
+
+// compile-time code: `comptime`, attributes, reflection functions
+{
+    const toks = tokenize(`attribute get(path: String = "/")\nattribute skip\n\n@get("/users/{id}")\n@routes.post("/x")\ncomptime fn key(f: Field) -> String:\n    return f.name\n\nfn route[H: Function](h: H, @skip verbose: Bool):\n    comptime val r = attribute(H, get)\n    comptime for p in params(H):\n        comptime if p.has(skip):\n            compile_error("no", at = r)\n    comptime match T:\n        case U?:\n            pass\n    val comptime = type_name(H)`);
+    const scopesOf = (text, nth = 0) => toks.filter((t) => t.text.trim() === text)[nth]?.scopes.join(" ") ?? "(missing)";
+    const check = (text, scope, nth = 0) => {
+        const got = scopesOf(text, nth);
+        if (!got.includes(scope)) {
+            console.error(`FAIL ${JSON.stringify(text)} #${nth}: expected ${scope}, got ${got}`);
+            failures++;
+        } else {
+            console.log(`ok   ${JSON.stringify(text)} #${nth} -> ${scope}`);
+        }
+    };
+    check("attribute", "storage.type.attribute", 0); // the declaration
+    check("get", "entity.name.function.decorator", 0);
+    check("path", "variable.parameter", 0);
+    check("@", "punctuation.definition.decorator", 0);
+    check("get", "entity.name.function.decorator", 1); // `@get(...)`
+    check("routes.post", "entity.name.function.decorator", 0);
+    check("comptime", "keyword.other.comptime", 0); // `comptime fn`
+    check("Field", "support.type.primitive", 0);
+    check("Function", "entity.name.type", 0); // a bound, like an interface
+    check("skip", "entity.name.function.decorator", 1); // `@skip verbose: Bool`
+    check("verbose", "variable.parameter", 0);
+    check("comptime", "keyword.other.comptime", 1); // `comptime val`
+    check("attribute", "storage.type.attribute", 1); // `attribute skip`
+    check("attribute", "support.function.builtin", 2); // `attribute(H, get)`
+    check("params", "support.function.builtin", 0);
+    check("comptime", "keyword.other.comptime", 3); // `comptime if`
+    check("compile_error", "support.function.builtin", 0);
+    check("comptime", "keyword.other.comptime", 4); // `comptime match`
+    check("match", "keyword.control.flow.match", 0);
+    check("?", "keyword.operator.optional", 0); // `case U?:`
+    check("comptime", "variable.other.declaration", 5); // just a name
+}
+
 const themes = ["light", "dark"].map((v) => JSON.parse(fs.readFileSync(path.join(root, `themes/tarn-${v}-color-theme.json`), "utf8")));
 for (const theme of themes) {
     const colored = new Set(theme.tokenColors.flatMap((r) => [].concat(r.scope)));
