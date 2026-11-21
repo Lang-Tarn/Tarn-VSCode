@@ -2,7 +2,7 @@
   "name": "tarn",
   "displayName": "Tarn",
   "description": "Tarn language support: live type checking, lints, hover, go to definition, completion, inlay type hints, syntax highlighting, a run button, and the Tarn Light theme.",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "publisher": "tarn-lang",
   "license": "UNLICENSED",
   "icon": "icons/icon.png",
@@ -136,7 +136,13 @@
         "editor.detectIndentation": false,
         "editor.inlayHints.enabled": "on"
       }
-    }
+    },
+    "tomlValidation": [
+      {
+        "fileMatch": "thorn.toml",
+        "url": "./schemas/thorn.schema.json"
+      }
+    ]
   },
   "scripts": {
     "build": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node --target=node18 --minify --sourcemap",

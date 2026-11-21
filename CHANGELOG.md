@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.17.0
+
+- Packages installed with Thorn, Tarn's package manager: `import colors` finds the package through the project's `.thorn/packages.json`, so the editor checks code that uses packages, hovers and completes their functions and types, and go to definition opens the package's (read-only) source. `import ` offers the installed packages next to the standard library and your files, and `import colors.` and `from colors import ` offer a package's modules.
+- The compiler's new messages appear live: "if `nothere` is a package, add it with `thorn add nothere`", "`later` is in `thorn.lock` but isn't installed: run `thorn sync`", and errors inside a package shown at the package's file (`broken@0.1.0/src/broken.tr:2:12`). A package's warnings aren't shown.
+- `thorn.toml` gets completion, hover and validation from a schema, with the Even Better TOML extension: the `[package]` keys, names that can be imported, versions with all three parts, version requirements and `{ path = ... }` dependencies.
+
 ## 0.16.0
 
 - Compile-time code: `comptime` is highlighted before `val`, `if`, `elif`, `for`, `match` and `fn`; `attribute get(path: String)` declarations and attributes written with `@` (`@get("/users/{id}")`, `@routes.post(...)`, and before a parameter: `@query page: Int`) get their own colors; `fields`, `params`, `attribute`, `type_name` and `compile_error` are built-in calls, and `Field`, `Parameter` and `Function` built-in types. Type patterns in a `comptime match` (`case U?:`, `case List[_]:`) highlight like other cases.
